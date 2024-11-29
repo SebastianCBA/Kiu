@@ -82,7 +82,7 @@ class JourneyController extends Controller
         // Crear combinaciones de viajes válidos (1 o 2 conexiones)
         $results = $this->createValidJourneys($flights, $from, $to, $date);
 
-        // Retornar las primeras 4 o 5 combinaciones como respuesta
+        // Retornar como maximo 5 combinaciones como respuesta
         return response()->json(array_slice($results, 0, 5));
     }
 
