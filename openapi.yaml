@@ -1,0 +1,55 @@
+openapi: 3.0.3
+info:
+  title: Toy Flight Events API
+  version: 0.0.1
+paths:
+  /flight-events:
+    get:
+      description: Flight events
+      summary: Returns all the available flight events
+      responses:
+        '200':
+          description: Flight event
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    flight_number:
+                      description: 'Flight number'
+                      type: string
+                    departure_city:
+                      description: Departure city code
+                      type: string
+                      minLenght: 3
+                      maxLength: 3
+                      example:
+                        - MAD
+                        - BUE
+                    arrival_city:
+                      description: Departure city code
+                      type: string
+                      minLenght: 3
+                      maxLength: 3
+                      example:
+                        - MAD
+                        - BUE
+                    departure_datetime:
+                      description: Departure date and time
+                      type: string
+                      format: date-time
+                      example: 2021-12-31T23:59:59Z
+                    arrival_datetime:
+                      description: Arrival date and time
+                      type: string
+                      format: date-time
+                      example: 2022-01-01T00:00:00Z
+                example:
+                  -
+                    flight_number: IB1234
+                    departure_city: MAD
+                    arrival_city: BUE
+                    departure_datetime: 2021-12-31T23:59:59Z
+                    arrival_datetime: 2022-01-01T00:00:00Z

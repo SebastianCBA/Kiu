@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kiu
+    ports:
+      - "8081:80"
+    volumes:
+      - .:/var/www/html
+    networks:
+      - webnet
+    entrypoint: ["/bin/sh", "-c",  "apache2-foreground"]
+
+networks:
+  webnet:
+    driver: bridge
