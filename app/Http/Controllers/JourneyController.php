@@ -77,7 +77,10 @@ class JourneyController extends Controller
         $to = $request->query('to');     // Código de ciudad (ej. PMI)
 
         // Generar eventos de vuelo simulados
-        $flights = $this->generateFlightEvents($date);
+        //$flights = $this->generateFlightEvents($date);
+
+        // Obtenemos eventos de vuelos definidos (estáticos)
+        $flights = $this->getFlightEvents($date);
 
         // Crear combinaciones de viajes válidos (1 o 2 conexiones)
         $results = $this->createValidJourneys($flights, $from, $to, $date);
@@ -149,14 +152,20 @@ class JourneyController extends Controller
                 ];
             }
 
+            
             // Vuelos con una conexión
             foreach ($flights as $flight2) {
+                $arrivalTimeFlight1 = strtotime($flight1['arrival_datetime']);
+                $departureTimeFlight2 = strtotime($flight2['departure_datetime']);
+                $totalDuration = strtotime($flight2['arrival_datetime']) - strtotime($flight1['departure_datetime']);
+    
                 if (
                     $flight1['departure_city'] === $from &&
                     $flight1['arrival_city'] === $flight2['departure_city'] &&
                     $flight2['arrival_city'] === $to &&
-                    strtotime($flight2['departure_datetime']) - strtotime($flight1['arrival_datetime']) <= 14400 && // Máximo 4 horas de conexión
-                    strtotime($flight2['arrival_datetime']) - strtotime($flight1['departure_datetime']) <= 86400 // Máximo 24 horas de duración total
+                    $departureTimeFlight2 >= $arrivalTimeFlight1 && // La conexión debe salir después de la llegada del primer vuelo
+                    ($departureTimeFlight2 - $arrivalTimeFlight1) <= 14400 && // Máximo 4 horas de conexión
+                    $totalDuration <= 86400 // Máximo 24 horas de duración total del viaje
                 ) {
                     $results[] = [
                         'connections' => 2,
@@ -164,8 +173,55 @@ class JourneyController extends Controller
                     ];
                 }
             }
-        }
+        }   
 
         return $results;
     }
+    /**
+     * Obtiene una lista de eventos de vuelo desde una fuente externa.
+     *
+     * @param string $date La fecha de los eventos de vuelo en formato `YYYY-MM-DD`.
+     * @return array
+     * Una lista de eventos de vuelo. Cada evento incluye:
+     * - `flight_number`: Número de vuelo.
+     * - `departure_city`: Ciudad de origen (código IATA).
+     * - `arrival_city`: Ciudad de destino (código IATA).
+     * - `departure_datetime`: Fecha y hora de salida en formato ISO8601 (UTC).
+     * - `arrival_datetime`: Fecha y hora de llegada en formato ISO8601 (UTC).
+     */
+    private function getFlightEvents($date)
+    {
+        // Simulando una respuesta de una API con eventos de vuelo
+        return [
+            [
+                'flight_number' => 'XX1234',
+                'departure_city' => 'BUE',
+                'arrival_city' => 'MAD',
+                'departure_datetime' => $date . 'T04:00:00Z',
+                'arrival_datetime' => $date . 'T10:00:00Z',
+            ],
+            [
+                'flight_number' => 'XX2345',
+                'departure_city' => 'MAD',
+                'arrival_city' => 'PMI',
+                'departure_datetime' => $date . 'T13:00:00Z',
+                'arrival_datetime' => $date . 'T14:00:00Z',
+            ],
+            [
+                'flight_number' => 'XX3456',
+                'departure_city' => 'BUE',
+                'arrival_city' => 'NYC',
+                'departure_datetime' => $date . 'T14:00:00Z',
+                'arrival_datetime' => $date . 'T23:59:00Z',
+            ],
+            [
+                'flight_number' => 'XX4567',
+                'departure_city' => 'NYC',
+                'arrival_city' => 'LAX',
+                'departure_datetime' => $date . 'T04:00:00Z',
+                'arrival_datetime' => $date . 'T08:00:00Z',
+            ],
+        ];
+    }
+
 }
